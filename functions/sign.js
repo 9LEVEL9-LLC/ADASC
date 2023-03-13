@@ -32,15 +32,15 @@ async function sign(account, offer, user_token){
                 },
             }
         );
-        console.log(payload.data);
+        console.log(payload.data.data);
         console.log(user_token)
         console.log(account)
         if (payload.status === 200)
-            return res.json(payload.data.refs.qr_png);
+            return payload.data.refs.qr_png;
     } catch (e) {
         console.log(new Date().toString(), "Sign Request Failed");
-        console.log(e);
-        return res.json("Failed");
+        console.log(e)
+        return "Failed"
     }
 }
 

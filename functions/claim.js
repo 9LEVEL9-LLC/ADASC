@@ -7,12 +7,12 @@ require("dotenv").config({
 });
 
 // Get necessary environment variables
-const issuer_key = process.env.ISSUER_SECRET
+const issuer_key = process.env.ISSUER_SECRET 
 const issuer_account = process.env.ISSUER_ACCOUNT
 
 
 // Function to create an offer for the given account and token ID
-function CreateOffer(account, tokenID) {
+function CreateOffer(account, tokenID) { 
     return {
         TransactionType: "NFTokenCreateOffer",
         Account: issuer_account,
@@ -26,14 +26,14 @@ function CreateOffer(account, tokenID) {
 // Function for the issuer to create the offer and send a sign request to the user
 async function claim(tokenID, uuid) {
     // Get the user's XRP Ledger account and issued user token using the uuid
-    const { data: { data: { response: { account }, application: { issued_user_token } } } } = await axios.get(`http://localhost:5000/payload/${uuid}`);
+    const { data: { data: { response: { account }, application: { issued_user_token } } } } = await axios.get(`http://localhost:5000/payload/${uuid}`); //replace this with the IP of where you're running the node server
     const user_token = issued_user_token
     // Get the user's NFTs
     const { data: { data: { nfts } } } = await axios.get(
         `https://api.xrpldata.com/api/v1/xls20-nfts/owner/${account}`);
     // Find the NFT with the given token ID
     const result = nfts.find(item => item.NFTokenID === tokenID);
-    if (!result) {
+    if (!result) { 
         // Return if the user does not own the token
         return "You don't own this token"
     }
@@ -45,12 +45,12 @@ async function claim(tokenID, uuid) {
         await client.connect();
         let nftSellOffers;
         // Check to see if an offer exists
-        try {
+        try { 
             nftSellOffers = await client.request({
                 method: "nft_sell_offers",
                 nft_id: claimTokenID
             });
-        } catch (err) {
+        } catch (err) { 
             // If offer doesn't exist, create an offer for the account to claim the NFT
             nftSellOffers = false;
             const issuer_wallet = xrpl.Wallet.fromSeed(issuer_key);
@@ -58,18 +58,18 @@ async function claim(tokenID, uuid) {
             const prepared_offer = await client.autofill(offerPayload)
             const signed_offer = issuer_wallet.sign(prepared_offer)
             const result_offer = await client.submit(signed_offer.tx_blob)
-            if (!result_offer.result.engine_result == "tesSUCCESS") {
+            if (!result_offer.result.engine_result == "tesSUCCESS") { 
                 // If offer doesn't go through, return this
                 return "Error in offer creation"
             }
             // Get the offer ID of the offer that was just created
             let claimSellOffer;
-            try {
+            try { 
                 claimSellOffer = await client.request({
                     method: "nft_sell_offers",
                     nft_id: claimTokenID
                 });
-            } catch (err) {
+            } catch (err) { 
                 // If no offer was created return this
                 return "Problem with rippled server"
             }
@@ -77,7 +77,7 @@ async function claim(tokenID, uuid) {
             const offerID = claimSellOffer.result.offers[0].nft_offer_index;
             //send the offer to the sign function/endpoint that sends the sign request to the users XUMM app and also return a scannable QR
             const signQR = await sign(account, offerID, user_token);
-            return signQR
+            return signQR 
         }
         // If an offer exists for the NFT, check if the account is the destination and send sign request
         if (nftSellOffers.result.offers[0].destination === account) {
