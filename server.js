@@ -6,6 +6,7 @@ const xrpl = require("xrpl");
 const sign = require("./endpoints/sign")
 const claim = require("./endpoints/claim")
 const getNFTs = require("./endpoints/nfts") 
+const checkHoldings = require("./endpoints/checkHoldings") 
 
 require("dotenv").config({
   path: ".env",
@@ -83,13 +84,13 @@ app.get("/payload/:payload_uuid", async (req, res) => {
 app.post("/sign", async (req, res) => {
     const { account, offer, user_token } = req.body;
     const signQR = await sign(account, offer, user_token);
-    return signQR 
+    return res.json(signQR) 
 });
 
 app.post("/claim", async (req, res) => {
     const { uuid, tid } = req.body;
     const claimQR = await claim(uuid, issuer, tid);
-    return claimQR
+    return res.json(claimQR)
 });
 
 
@@ -99,6 +100,12 @@ app.post("/nfts", async (req, res) => {
     const nfts = await getNFTs(account, issuers)
     return res.json(nfts);
 });
+
+app.post("/holdings", async (req, res) => {
+    const account = req.headers["account"];
+    const holdings = await checkHoldings(account);
+    return res.json(holdings)
+})
 
 app.delete("/logout/:payload_uuid", async (req, res) => {
   console.log(new Date().toString(), "logout call");
